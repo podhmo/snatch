@@ -46,6 +46,15 @@ func main() {
 ```
 
 
+Execution result.
+
+```console
+Run, debug= false
+----------------------------------------
+Run, debug= true
+```
+
+
 Then, program package's code is here.
 
 ```go
@@ -65,12 +74,4 @@ func (p *Program) Run() {
 func New() *Program {
 	return &Program{}
 }
-```
-
-Execution result.
-
-```console
-Run, debug= false
-----------------------------------------
-Run, debug= true
 ```
