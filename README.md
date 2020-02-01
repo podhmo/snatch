@@ -19,5 +19,58 @@ $ go get github.com/podhmo/snatch
 
 ## How to use
 
-TODO
+Use `Field()` method.
 
+```go
+package main
+
+import (
+	"fmt"
+	"unsafe"
+
+	"github.com/podhmo/snatch"
+	"github.com/podhmo/snatch/examples/00readme/program"
+)
+
+func main() {
+	prog := program.New()
+	prog.Run()
+
+	fmt.Println("----------------------------------------")
+	snatch.FieldOrPanic(prog, "debug", func(ptr unsafe.Pointer) {
+		realPtr := (*bool)(ptr)
+		*realPtr = true
+	})
+	prog.Run()
+}
+```
+
+
+Then, program package's code is here.
+
+```go
+package program
+
+import "fmt"
+
+// Program ...
+type Program struct {
+	debug bool
+}
+
+func (p *Program) Run() {
+	fmt.Println("Run, debug=", p.debug)
+}
+
+func New() *Program {
+	return &Program{}
+}
+```
+
+Execution result.
+
+```console
+Run, debug= false
+----------------------------------------
+Run, debug= true
+```
