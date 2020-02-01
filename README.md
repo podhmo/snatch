@@ -19,7 +19,7 @@ $ go get github.com/podhmo/snatch
 
 ## How to use
 
-Use `Field()` method.
+Use `Field()` or `FieldOrPanic()` method.
 
 ```go
 package main
