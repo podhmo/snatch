@@ -26,27 +26,33 @@ func New() *S {
 	}
 }
 func Test(t *testing.T) {
-	// {
-	// 	s := New()
-	// 	fmt.Println(s.Do())
-	// }
-
-	s := New()
-	snatch.Field(s, "cont", func(ptr unsafe.Pointer) {
-		realPtr := (*func(int) error)(ptr)
-		cont := func(n int) error {
-			return fmt.Errorf("%s%s", strings.Repeat("@", n*4), "<black magic>")
+	t.Run("no-replace", func(t *testing.T) {
+		s := New()
+		err := s.Do()
+		if err != nil {
+			t.Fatalf("must be nil")
 		}
-		*realPtr = cont
 	})
 
-	err := s.Do()
-	if err == nil {
-		t.Fatalf("must be replaced")
-	}
+	t.Run("replace", func(t *testing.T) {
+		s := New()
 
-	want := `@@@@<black magic>`
-	if want != err.Error() {
-		t.Errorf("want %q, but %q", want, err)
-	}
+		snatch.Field(s, "cont", func(ptr unsafe.Pointer) {
+			realPtr := (*func(int) error)(ptr)
+			cont := func(n int) error {
+				return fmt.Errorf("%s%s", strings.Repeat("@", n*4), "<black magic>")
+			}
+			*realPtr = cont
+		})
+
+		err := s.Do()
+		if err == nil {
+			t.Fatalf("must be error")
+		}
+
+		want := `@@@@<black magic>`
+		if want != err.Error() {
+			t.Errorf("want %q, but %q", want, err)
+		}
+	})
 }
