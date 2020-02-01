@@ -1,10 +1,12 @@
-package snatch
+package snatch_test
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
+	"testing"
 	"unsafe"
+
+	"github.com/podhmo/snatch"
 )
 
 type S struct {
@@ -12,50 +14,39 @@ type S struct {
 }
 
 func (s *S) Do() error {
-	fmt.Println("Run")
+	// do something
 	return s.cont(1)
 }
 
 func New() *S {
 	return &S{
 		cont: func(n int) error {
-			fmt.Println(strings.Repeat("\t", n), "end")
 			return nil
 		},
 	}
 }
+func Test(t *testing.T) {
+	// {
+	// 	s := New()
+	// 	fmt.Println(s.Do())
+	// }
 
-func main() {
-	{
-		s := New()
-		fmt.Println(s.Do())
-	}
-	fmt.Println("----------------------------------------")
-
-	{
-		s := New()
-
-		rv := reflect.ValueOf(s).Elem()
-		rt := rv.Type()
-
-		var rf reflect.Value
-		for i := 0; i < rt.NumField(); i++ {
-			f := rt.Field(i)
-			if f.Name == "cont" {
-				rf = rv.FieldByIndex([]int{i})
-				break
-			}
-		}
-
-		ptr := unsafe.Pointer(rf.UnsafeAddr())
+	s := New()
+	snatch.Field(s, "cont", func(ptr unsafe.Pointer) {
 		realPtr := (*func(int) error)(ptr)
 		cont := func(n int) error {
-			fmt.Println(strings.Repeat("@", n*4), "<black magic>")
-			return fmt.Errorf("hmm")
+			return fmt.Errorf("%s%s", strings.Repeat("@", n*4), "<black magic>")
 		}
 		*realPtr = cont
+	})
 
-		fmt.Println(s.Do())
+	err := s.Do()
+	if err == nil {
+		t.Fatalf("must be replaced")
 	}
 
+	want := `@@@@<black magic>`
+	if want != err.Error() {
+		t.Errorf("want %q, but %q", want, err)
+	}
 }
